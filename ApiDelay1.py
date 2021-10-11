@@ -48,7 +48,6 @@ lastBanList = []
 n = 0
 print("start")
 
-reserve_time_ls = []
 time_first = []
 turn = 0
 isBan = False
@@ -63,7 +62,8 @@ while True:
         img = ImageGrab.grab(bbox=(x_w, y_w, w_w, h_w))
         img_np = np.array(img)
         frame = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-        reserve_time_ls = reverse_time(frame)
+        radiant_time_str, dire_time_str = reverse_time_rad(frame), reverse_time_dire(frame)
+        # rv_time_ls = reverse_time(frame)
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         if gray_frame[578][1639] > 100:
             first_team = "rad"
@@ -87,10 +87,10 @@ while True:
             img = np.array(gray.flatten(), dtype=int)
             hero_name = clf.predict([img])[0]
             banList.append(hero_name.split("__")[0])
-        if len(banList) in nums_ban:
-            isBan = False
-        else:
+        if present_time != 30:
             isBan = True
+        else:
+            isBan = False
         print(time.time() - s)
         for i in range(10):
             hero_mini_list = pick_phase(frame, hero_mini_list, pick_coords, i)
@@ -105,7 +105,6 @@ while True:
 
 
 print(first_team)
-radiant_time_str, dire_time_str = reserve_time_ls
 print(present_time)
 present_time = present_time - (time.time() - s)
 first_count = True
@@ -114,7 +113,9 @@ banned = 0
 count_unpick = 0
 print(banList)
 print(pickList)
-print(reserve_time_ls, present_time)
+print(radiant_time_str, dire_time_str, present_time)
+# print(rv_time_ls)
+isRadiant = True
 while True:
     start = time.time()
     rad_ban = []
@@ -145,7 +146,7 @@ while True:
             gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
             img = np.array(gray.flatten(), dtype=int)
             hero_name = clf.predict([img])[0]
-            banList.append(hero_name.split("__")[0] + ".jpg")
+            banList.append(hero_name.split("__")[0])
     if banList != lastBanList:
         print(banList)
         lastBanList = banList
@@ -180,16 +181,6 @@ while True:
     if first_count:
         base_time = present_time
         first_count = False
-    if base_time > 0:
-        base_time -= time.time() - start
-    else:
-        if not isPick:
-            radiant_time_str, dire_time_str = reverse_time(frame)
-        base_time = 0
-
-    return_dict["RT_radiant"] = radiant_time_str
-    return_dict["RT_dire"] = dire_time_str
-    return_dict["timeBP"] = "0:" + str(int(base_time)) if base_time//10 >= 1 else "0:0" + str(int(base_time))
     if len(pickList) == 10:
         return_dict["RT_radiant"] = ""
         return_dict["RT_dire"] = ""
@@ -227,14 +218,18 @@ while True:
     if isBan and len(banList) < 14:
         teamBanning = team_banning(banned, first_team)
         if teamBanning == "dire":
+            isRadiant = False
             dire_ban.append("banning.mov")
         else:
+            isRadiant = True
             rad_ban.append("banning.mov")
     else:
         teamPicking = team_picking(picked, first_team)
         if teamPicking == "dire":
+            isRadiant = False
             dire_pick.append("picking.mov")
         else:
+            isRadiant = True
             rad_pick.append("picking.mov")
     rad_ban = fill_list(rad_ban, "ban")
     dire_ban = fill_list(dire_ban, "ban")
@@ -246,7 +241,19 @@ while True:
         if i < 5:
             return_dict[f"turn_{process_return(i + 15)}"] = dire_pick[i]
             return_dict[f"turn_{process_return(i + 20)}"] = rad_pick[i]
-    print(int(base_time), radiant_time_str, dire_time_str, "isBan: ", isBan, "isPick: ", isPick)
+    if base_time > 0:
+        base_time -= time.time() - start
+    else:
+        if not isPick:
+            if isRadiant:
+                radiant_time_str = reverse_time_rad(frame)
+            else:
+                dire_time_str = reverse_time_dire(frame)
+        base_time = 0
+    return_dict["RT_radiant"] = radiant_time_str
+    return_dict["RT_dire"] = dire_time_str
+    return_dict["timeBP"] = "0:" + str(int(base_time)) if base_time//10 >= 1 else "0:0" + str(int(base_time))
+    print(int(base_time), radiant_time_str, dire_time_str, "isBan: ", isBan, "isPick: ", isPick, "isRadiant: ", isRadiant)
     print(banList, pickList)
     # Writing to sample.json
     json_object = json.dumps(return_dict)

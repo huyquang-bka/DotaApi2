@@ -17,3 +17,25 @@ def reverse_time(frame):
     radiant_time = reserve_time_ls[0] + ":" + reserve_time_ls[1]
     dire_time = reserve_time_ls[2] + ":" + reserve_time_ls[3]
     return [radiant_time, dire_time]
+
+
+def reverse_time_rad(frame):
+    reserve_time_ls = []
+    for i in range(2):
+        x, y, w, h = reserve_time_coords[i + 1]
+        crop = frame[y:y + h, x:x + w]
+        rv_time = img_to_text(crop)
+        reserve_time_ls.append(rv_time)
+    radiant_time = reserve_time_ls[0] + ":" + reserve_time_ls[1]
+    return radiant_time
+
+
+def reverse_time_dire(frame):
+    reserve_time_ls = []
+    for i in range(2, 4):
+        x, y, w, h = reserve_time_coords[i + 1]
+        crop = frame[y:y + h, x:x + w]
+        rv_time = img_to_text(crop)
+        reserve_time_ls.append(rv_time)
+    dire_time = reserve_time_ls[0] + ":" + reserve_time_ls[1]
+    return dire_time
