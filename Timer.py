@@ -62,7 +62,7 @@ def get_time_pick(frame, turn_pick, first_team):
     except:
         pass
 
-    return "0"
+    return "-1"
 
 
 def get_time_ban(frame):
@@ -75,9 +75,9 @@ def get_time_ban(frame):
                                            config='--psm 13 --oem 1 -c tessedit_char_whitelist=0123456789',
                                            lang="eng")
         if not re.sub("[\W_]+", "", text):
-            return "00"
+            return "-1"
         return re.sub("[\W_]+", "", text)[-2:]
     except:
         pass
 
-    return "00"
+    return "-1"

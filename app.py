@@ -15,6 +15,31 @@ with open("jsonFile/item_ids.json", "rb") as f:
     item_ids = json.load(f)
 
 
+def get_match_id():
+    r = requests.get(f"https://api.opendota.com/api/live")
+    data = json.loads(r.content)
+    for match in data:
+        league_id = match["league_id"]
+        if league_id == 13256:
+            match_id = match["match_id"]
+    return match_id
+
+
+@app.route("/live_match")
+def get_live_match():
+    live_match = {}
+    r = requests.get(f"https://api.opendota.com/api/live")
+    data = json.loads(r.content)
+    for match in data:
+        league_id = match["league_id"]
+        if league_id == 13256:
+            match_id = match["match_id"]
+            team_name_radiant = match["team_name_radiant"]
+            team_name_dire = match["team_name_dire"]
+    live_match[f"{team_name_radiant} vs {team_name_dire}"] = match_id
+    return jsonify(live_match)
+
+
 @app.route("/")
 def first_page():
     return "This is for Dota Api"
@@ -42,8 +67,9 @@ def test_status():
     return "No file"
 
 
-@app.route("/match_info/<match_id>")
-def match_info(match_id):
+@app.route("/match_info")
+def match_info():
+    match_id = get_match_id()
     r = requests.get(f"https://api.opendota.com/api/matches/{match_id}/")
     data = json.loads(r.content)
     match_dict = []

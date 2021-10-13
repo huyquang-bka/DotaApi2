@@ -87,10 +87,12 @@ while True:
             img = np.array(gray.flatten(), dtype=int)
             hero_name = clf.predict([img])[0]
             banList.append(hero_name.split("__")[0])
-        if present_time != 30:
+        print("After ban: ", present_time)
+        if present_time != 30 and present_time != -1:
             isBan = True
         else:
             isBan = False
+        print("isBan: ", isBan)
         print(time.time() - s)
         for i in range(10):
             hero_mini_list = pick_phase(frame, hero_mini_list, pick_coords, i)
@@ -114,6 +116,7 @@ count_unpick = 0
 print(banList)
 print(pickList)
 print(radiant_time_str, dire_time_str, present_time)
+exit()
 # print(rv_time_ls)
 isRadiant = True
 while True:
@@ -181,10 +184,6 @@ while True:
     if first_count:
         base_time = present_time
         first_count = False
-    if len(pickList) == 10:
-        return_dict["RT_radiant"] = ""
-        return_dict["RT_dire"] = ""
-        return_dict["timeBP"] = ""
     team1 = []
     team2 = []
     for i in range(10):
@@ -253,6 +252,10 @@ while True:
     return_dict["RT_radiant"] = radiant_time_str
     return_dict["RT_dire"] = dire_time_str
     return_dict["timeBP"] = "0:" + str(int(base_time)) if base_time//10 >= 1 else "0:0" + str(int(base_time))
+    if len(pickList) == 10:
+        return_dict["RT_radiant"] = ""
+        return_dict["RT_dire"] = ""
+        return_dict["timeBP"] = ""
     print(int(base_time), radiant_time_str, dire_time_str, "isBan: ", isBan, "isPick: ", isPick, "isRadiant: ", isRadiant)
     print(banList, pickList)
     # Writing to sample.json
